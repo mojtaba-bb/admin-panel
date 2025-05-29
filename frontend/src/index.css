@@ -1,0 +1,26 @@
+
+@import "tailwindcss";
+
+
+.ChartShadow{
+    -webkit-box-shadow: inset 30px 0px 20px 0px rgba(24,24,27,1);
+    -moz-box-shadow: inset 30px 0px 20px 0px rgba(24,24,27,1);
+    box-shadow: inset 30px 0px 20px 0px rgba(24,24,27,1);
+}
+
+:root{
+    --postsColor : var(--color-sky-300);
+    --SeoColor : #7DFFCF;
+    --mediaColor : #d97706;
+    
+    --chatColor : #FFC77D;
+    --commentsColor : #F36969;
+    --jobsColor: #C77DFF;
+}
+
+
+.w-78{
+
+    width: calc(var(--spacing) * 78) /* 18rem = 288px */;
+
+}

@@ -1,0 +1,187 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { AiOutlinePlus } from "react-icons/ai";
+import { BiImageAdd } from "react-icons/bi";
+
+const emptyLangData = {
+  title: "",
+  content: "",
+};
+
+const AddPost = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    persian: { ...emptyLangData },
+    english: { ...emptyLangData },
+    images: [],
+    tags: [],
+    status: "draft",
+    links: [{ text: "", url: "" }],
+  });
+
+  const handleLangChange = (lang, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [lang]: {
+        ...prev[lang],
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleTags = (e) => {
+    setFormData({ ...formData, tags: e.target.value.split(",") });
+  };
+
+  const handleLinkChange = (index, field, value) => {
+    const newLinks = [...formData.links];
+    newLinks[index][field] = value;
+    setFormData({ ...formData, links: newLinks });
+  };
+
+  const addLinkField = () => {
+    setFormData({ ...formData, links: [...formData.links, { text: "", url: "" }] });
+  };
+
+  const handleImageUpload = () => {
+    // TODO: Replace this with media library modal or file picker
+    const dummyURL = prompt("Enter image URL:");
+    if (dummyURL) {
+      setFormData({ ...formData, images: [...formData.images, dummyURL] });
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        title: formData.persian.title,
+        content: formData.persian.content,
+        language: "Persian",
+        images: formData.images,
+        tags: formData.tags,
+        status: formData.status,
+        links: formData.links,
+      };
+      const enPayload = {
+        ...payload,
+        title: formData.english.title,
+        content: formData.english.content,
+        language: "English",
+      };
+
+      await axios.post("/api/posts", payload);
+      await axios.post("/api/posts", enPayload);
+      navigate("/content-manager/posts");
+    } catch (error) {
+      console.error("Error submitting post:", error);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 bg-zinc-900 text-yellow-200 rounded-xl">
+      <h1 className="text-2xl font-bold mb-4">Add New Post</h1>
+      <form onSubmit={handleSubmit} className="space-y-6">
+
+        {["persian", "english"].map((lang) => (
+          <div key={lang}>
+            <h2 className="text-xl font-semibold mb-2">
+              {lang === "persian" ? "اطلاعات فارسی" : "English Content"}
+            </h2>
+            <input
+              type="text"
+              placeholder="Title"
+              value={formData[lang].title}
+              onChange={(e) => handleLangChange(lang, "title", e.target.value)}
+              className="w-full p-2 rounded bg-zinc-800 border border-yellow-300 mb-2"
+              required
+            />
+            <textarea
+              placeholder="Content"
+              value={formData[lang].content}
+              onChange={(e) => handleLangChange(lang, "content", e.target.value)}
+              className="w-full p-2 rounded bg-zinc-800 border border-yellow-300"
+              rows={4}
+              required
+            ></textarea>
+          </div>
+        ))}
+
+        <div>
+          <label className="block mb-1">Tags (comma separated)</label>
+          <input
+            type="text"
+            onChange={handleTags}
+            className="w-full p-2 rounded bg-zinc-800 border border-yellow-300"
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-2 items-center">
+          <button
+            type="button"
+            onClick={handleImageUpload}
+            className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded"
+          >
+            <BiImageAdd /> Add Media
+          </button>
+          {formData.images.map((img, i) => (
+            <img key={i} src={img} alt={`media-${i}`} className="w-16 h-16 rounded object-cover" />
+          ))}
+        </div>
+
+        <div>
+          <label className="block mb-1">Status</label>
+          <select
+            name="status"
+            value={formData.status}
+            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+            className="w-full p-2 rounded bg-zinc-800 border border-yellow-300"
+          >
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block mb-1">Links</label>
+          {formData.links.map((link, index) => (
+            <div key={index} className="flex space-x-2 mb-2">
+              <input
+                type="text"
+                placeholder="Link Text"
+                value={link.text}
+                onChange={(e) => handleLinkChange(index, "text", e.target.value)}
+                className="w-1/3 p-2 rounded bg-zinc-800 border border-yellow-300"
+              />
+              <input
+                type="url"
+                placeholder="Link URL"
+                value={link.url}
+                onChange={(e) => handleLinkChange(index, "url", e.target.value)}
+                className="w-2/3 p-2 rounded bg-zinc-800 border border-yellow-300"
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addLinkField}
+            className="flex items-center space-x-1 text-sm text-green-400 mt-1"
+          >
+            <AiOutlinePlus /> <span>Add Link</span>
+          </button>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full py-2 bg-yellow-300 text-zinc-900 font-semibold rounded"
+        >
+          Submit
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default AddPost;
